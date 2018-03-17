@@ -11,8 +11,9 @@ import (
 	"strings"
 )
 
-const Token = "xoxp-9703499330-142402896932-321409822323-86c10b26bc171663bf3d6d90e45c89c1"
-const PostMessageUrl = "https://slack.com/api/chat.postMessage"
+type Auth struct {
+	Token string `json:"token"`
+}
 
 type Parameters struct {
 	Channel     string       `json:"channel"`
@@ -33,6 +34,34 @@ type Attachment struct {
 type Field struct {
 	Title string `json:"title"`
 	Value string `json:"value"`
+}
+
+const PostMessageUrl = "https://slack.com/api/chat.postMessage"
+const AuthFile = "slack.json"
+
+var slackAuth Auth
+
+func Init(filePath string) (error) {
+	correctPath := fixPath(filePath)
+	fileContent, err := ioutil.ReadFile(correctPath + AuthFile)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(fileContent, &slackAuth)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func fixPath(path string) string {
+	lastChar := path[len(path)-1:]
+	if lastChar != "/" {
+		path += "/"
+	}
+	return path
 }
 
 func setAttDefaults(a *Attachment) {
@@ -126,7 +155,7 @@ func SendMessage(username string, iconEmoji string, channel string, attachment A
 	url := PostMessageUrl
 	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBodyParameters))
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("authorization", "Bearer "+Token)
+	req.Header.Set("authorization", "Bearer "+slackAuth.Token)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
