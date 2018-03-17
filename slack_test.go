@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+func TestInit(t *testing.T) {
+	slackInitialization := Init("./config")
+	var expectedResult error = nil
+	if slackInitialization != expectedResult {
+		t.Fatalf("Expected %s but got %s", expectedResult, slackInitialization)
+	}
+}
+
 func TestColorDefaults(t *testing.T) {
 	f, _ := MakeField("", "")
 	a, _ := MakeAttachment("#ff000", "", "", []Field{f}, time.Now().Unix())
